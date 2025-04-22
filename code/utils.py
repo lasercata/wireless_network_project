@@ -35,7 +35,14 @@ def get_matrix(fn: str) -> np.ndarray:
     N_Re = 624
     N = 1024
 
+    bound_1 = N_Re // 2 - 1
+    bound_2 = N - (N_Re // 2)
+
+    # The short matrix is from range [0 : bound_1] + [bound_2 : ]
+
     print(f'1 : {N_Re // 2} ; {N - (N_Re // 2) + 1} : {N}')
+
+    tf_mat_short = []
 
     tf_mat_short = mat_complex[ #TODO: there is a problem in the slicing here.
         1 : (N_Re // 2),
