@@ -19,7 +19,7 @@ import sk_dsp_comm.fec_conv as fec
 
 
 ##-Functions
-def get_matrix(fn: str) -> np.ndarray:
+def get_matrix(fn: str) -> list[list[np.complex128]]:
     '''
     Parse the csv file `fn` and return the associated matrix.
 
@@ -39,18 +39,17 @@ def get_matrix(fn: str) -> np.ndarray:
     bound_2 = N - (N_Re // 2)
 
     # The short matrix is from range [0 : bound_1] + [bound_2 : ]
+    # print(f'1 : {bound_1} ; {bound_2 + 1} : {N}')
 
-    print(f'1 : {N_Re // 2} ; {N - (N_Re // 2) + 1} : {N}')
-
-    tf_mat_short = []
-
-    tf_mat_short = mat_complex[ #TODO: there is a problem in the slicing here.
-        1 : (N_Re // 2),
-        (N - (N_Re // 2) + 1) : N
+    a = [
+        [mat_complex[i][j] for j in range(bound_1)]
+        + [mat_complex[i][j] for j in range(bound_2, N)]
+        for i in range(12)
     ]
 
-    # return tf_mat_short
-    return mat_complex
+    # tf_mat_short = np.array(a)
+    return a
+
 
 def print_matrix(m):
     '''
