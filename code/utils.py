@@ -100,3 +100,30 @@ def power_distrib_graph(Z):
     ax.set_ylabel('time')
 
     plt.show()
+
+def flatten_index(i: int, j: int, width: int = 624) -> int:
+    """Returns the flatten index of the (i, j) element in the flattened matrix.
+
+    Args:
+        i (int): index of the list in the list.
+        j (int): index of the element in the list.
+        width (int, optional): length of the lists in the list. Defaults to 624.
+
+    Returns:
+        int: index of the element in the flatten matrix. 
+    """
+
+    return width*i + j
+
+def unflatten_index(i: int, width: int = 624) -> tuple[int, int]:
+    """Returns the coordinates of the i element in the unflattened matrix.
+
+    Args:
+        i (int): index of the element in the flattened matrix.
+        width (int, optional): length of the lists in the list. Defaults to 624.
+
+    Returns:
+        tuple[int, int]: coordinates of the element in the unflattened matrix.
+    """
+
+    return (i // width, i % width)
