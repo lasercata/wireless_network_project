@@ -4,7 +4,7 @@
 '''Main file'''
 
 ##-Imports
-from utils import *
+from src.utils import *
 
 ##-Main
 def test_matrix():
@@ -17,7 +17,7 @@ def test_matrix():
     print(m1[i][j])
 
     # print_matrix(m1)
-    # power_distrib_graph(m1)
+    power_distrib_graph(m1)
 
 ##-Run
 if __name__ == '__main__':
