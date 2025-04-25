@@ -5,6 +5,7 @@
 
 ##-Imports
 from src.utils import *
+from tests.tests_hamming import *
 
 ##-Main
 def test_matrix():
@@ -21,4 +22,6 @@ def test_matrix():
 
 ##-Run
 if __name__ == '__main__':
-    test_matrix()
+    # test_matrix()
+
+    test_hammingDecode()
