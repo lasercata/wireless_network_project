@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-'''TODO'''
+'''File defining useful functions and variables for the project.'''
 
 ##-Imports
 import numpy as np
@@ -17,6 +17,8 @@ import pytest
 # Convolutional decoder
 import sk_dsp_comm.fec_conv as fec
 
+##-Init
+#TODO: create a dictionnay with all the usefull information (cell size and number od users)
 
 ##-Functions
 def get_matrix(fn: str) -> list[list[np.complex128]]:
