@@ -11,7 +11,15 @@ def bpsk_demod(v: np.ndarray) -> list[int]:
         list[int]: calculated demodulation.
     """
 
-    pass
+    ret = []
+    
+    for c in v:
+        if c.real <= 0:
+            ret.append(0)
+        else:
+            ret.append(1)
+
+    return ret
 
 def qpsk_demod(v: np.ndarray) -> list[int]:
     """QPSK demodulation.
@@ -23,7 +31,20 @@ def qpsk_demod(v: np.ndarray) -> list[int]:
         list[int]: calculated demodulation.
     """
 
-    pass
+    ret = []
+
+    for c in v:
+        if c.real <= 0:
+            ret.append(0)
+        else:
+            ret.append(1)
+
+        if c.imag <= 0:
+            ret.append(0)
+        else:
+            ret.append(1)
+
+    return ret
 
 def qam16_demod(v: np.ndarray) -> list[int]:
     """qam16 demodulation.

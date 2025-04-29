@@ -6,6 +6,7 @@
 ##-Imports
 from src.utils import *
 from tests.tests_hamming import *
+from tests.tests_modulation import *
 
 ##-Main
 def test_matrix():
@@ -25,3 +26,9 @@ if __name__ == '__main__':
     # test_matrix()
 
     test_hammingDecode()
+
+    test_bpsk()
+    test_qpsk()
+    print('bpsk and qpsk tests passed')
+    test_qam16()
+    print('qam16 tests passed')
