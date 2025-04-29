@@ -127,3 +127,15 @@ def unflatten_index(i: int, width: int = 624) -> tuple[int, int]:
     """
 
     return (i // width, i % width)
+
+def bin2dec(nb: list[int]) -> int:
+    """Converts a number from base 2 to base 10.
+
+    Args:
+        nb (list[int]): the number in base 2.
+
+    Returns:
+        int: number in base 10.
+    """
+
+    return int(''.join(str(k) for k in nb), 2)
