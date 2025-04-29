@@ -25,8 +25,7 @@ class Hamming748:
         # self.
 
     def encode(self, x: list[int]) -> list[int]:
-        '''TODO: Docstring for encode.
-
+        '''TODO: Docstring for encode.ERROR main.py::test_error
         - x : TODO
         '''
     

@@ -1,12 +1,48 @@
-def qam16_demod(input_sequence):
+import numpy as np
+import math
+
+def bpsk_demod(v: np.ndarray) -> list[int]:
+    """BPSK demodulation.
+
+    Args:
+        v (np.ndarray): input sequence.
+
+    Returns:
+        list[int]: calculated demodulation.
+    """
+
+    pass
+
+def qpsk_demod(v: np.ndarray) -> list[int]:
+    """QPSK demodulation.
+
+    Args:
+        v (np.ndarray): input sequence.
+
+    Returns:
+        list[int]: calculated demodulation.
+    """
+
+    pass
+
+def qam16_demod(v: np.ndarray) -> list[int]:
+    """qam16 demodulation.
+
+    Args:
+        v (np.ndarray): input sequence.
+
+    Returns:
+        list[int]: calculated demodulation.
+    """
+
     # %FIXME Scaling vector 
-    input_sequence = input_sequence * math.sqrt(2/3*(16-1))
+    v = v * math.sqrt(2/3*(16-1))
     # Need to switch to vector 
-    input_sequence = np.matrix.flatten(input_sequence)
+    v = np.matrix.flatten(v)
     # Instantiate an empty list
     output_sequence = []
     # Decoding each element 
-    for elem in input_sequence:
+    for elem in v:
         # --- Real part decision 
         if np.real(elem) < -  2:
             bit1 = 1
