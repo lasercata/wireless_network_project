@@ -20,10 +20,6 @@ class Hamming748:
         ]
         self.H = np.array(self.H_)
 
-        # self.no_err = [0, 0, 0]
-        # self.one_err = [0, 0, 1]
-        # self.
-
     def encode(self, x: list[int]) -> list[int]:
         '''TODO: Docstring for encode.ERROR main.py::test_error
         - x : TODO
@@ -36,6 +32,9 @@ class Hamming748:
         Decodes `y`.
 
         - y : the bits to decode. Its length should be a multiple of eight.
+
+        Returns:
+            The decoded bits. The length of the output is the half of the length of the input.
         '''
 
         if len(y) % 8 != 0:

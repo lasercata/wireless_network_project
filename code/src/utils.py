@@ -18,14 +18,17 @@ import pytest
 import sk_dsp_comm.fec_conv as fec
 
 ##-Init
-#TODO: create a dictionnay with all the usefull information (cell size and number od users)
+#TODO: create a dictionnay with all the usefull information (cell size and number of users)
 
 ##-Functions
 def get_matrix(fn: str) -> list[list[np.complex128]]:
     '''
     Parse the csv file `fn` and return the associated matrix.
 
-    - fn : TODO
+    It removes the unused part.
+
+    Args:
+        :fn: the file name
     '''
 
     #---Read from file

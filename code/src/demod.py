@@ -2,7 +2,7 @@ import numpy as np
 import math
 
 def bpsk_demod(v: np.ndarray) -> list[int]:
-    """BPSK demodulation.
+    """BPSK demodulation (2 QAM).
 
     Args:
         v (np.ndarray): input sequence.
