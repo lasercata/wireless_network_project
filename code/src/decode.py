@@ -1,13 +1,82 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+##-Imports
 import numpy as np
 
 from src.demod import bpsk_demod
 from src.hamming748 import Hamming748
-from src.utils import bin2dec
+from src.utils import bin2dec, get_matrix
 
+##-DecodeMatrix
 class DecodeMatrix:
-    def __init__(self, matrix: np.ndarray):
+    '''Class defining methods to decode a simplified 5G signal'''
+
+    def __init__(self, matrix: list[list[np.complex128]]):
+        '''
+        Constructor.
+
+        Args:
+            :matrix: the matrix representing the signal
+        '''
+
         self.matrix = matrix
         self.decoded_pbch = None
+
+        self.mat_idx = 0
+
+    def retreive_PBCH(self) -> list[int]:
+        '''
+        Retreives the PBCH (broadcast channel) from the matrix
+        It also flattens the matrix.
+
+        TODO: currently, it only removes (supposedely) the synchronisation symbols.
+
+        Returns:
+            np.ndarray: the PBCH we retreived
+        '''
+
+        pbch_and_more = self.matrix[2:] # The PBCH starts from the third line.
+        #TODO: is this correct ?
+
+        # Notes: We only know the beginning of it (third line, or more precisely, the first symbol that is not used for synchronisation).
+        # The lenght depends on the number of users.
+        #TODO: It is also needed to make a function that only checks the user_ident (and not the other useless fields) and checks if it correspond to the wanted user_idx.
+
+        # Flatten the matrix
+        flatten_mat = []
+        for i in range(len(pbch_and_more)):
+            for j in range(len(pbch_and_more[i])):
+                flatten_mat.append(pbch_and_more[i][j])
+
+        return flatten_mat
+
+    def demod_decode_block(self, block: list[int]) -> list[int]:
+        '''Demods (using 2QAM) and then decodes (using Hamming748) the 48 bits block into a 24 bits block.'''
+
+        demoded = bpsk_demod(block) # demoded should be 48 bits long
+        h = Hamming748()
+        decoded = h.decode(demoded) # decoded should be 24 bits long
+
+        return decoded
+
+    def decode_PBCH_header(self) -> tuple[int, int]:
+        '''
+        Decodes the header of the PBCH.
+
+        Returns:
+            tuple: (cell ident, number of users).
+        '''
+    
+        header = self.retreive_PBCH()[:48] #TODO: is this correct ?
+
+        decoded_header = self.demod_decode_block(header)
+
+        # Retreiving cell ident (18 bits) and user number (6 bits)
+        cell_ident = bin2dec(decoded_header[:18])
+        user_nb = bin2dec(decoded_header[18:])
+
+        return (cell_ident, user_nb)
 
     def decode_PBCH(self) -> tuple[int, list[dict[str, int]]]:
         '''
@@ -19,47 +88,14 @@ class DecodeMatrix:
             tuple[int, list[dict]]: (user_nb, [{'user_ident': <user_ident>, 'mcs': <mcs>, 'symb_start': <symb_start>, 'rb_start': <rb_start>, 'harq': <harq>}, ...])
         '''
 
-        # Retreiving the PBCH from the matrix
-        pbch = self.retreive_PBCH()
-
-        # Demoding the PBCH to 2qam
-        pbch_demoded = bpsk_demod(pbch)
-
-        # Decoding with Hamming
-        h = Hamming748()
-        self.decoded_pbch = h.decode(pbch_demoded)
-
-        # Retreiving cell ident (18 bits) and user number (6 bits)
-        self.cell_ident, self.user_nb = self.extract_PBCH_header_data()
+        # Retreiving header data
+        self.cell_ident, self.user_nb = self.decode_PBCH_header()
 
         user_data = []
         for user_idx in range(self.user_nb):
             user_data.append(self.extract_PBCH_user_data(user_idx))
 
         return self.user_nb, user_data
-
-    def extract_PBCH_header_data(self) -> tuple[int, int]:
-        '''
-        Extracts cell ident and user number from the (decoded) PBCH 24 first bits.
-
-        Args:
-            pbch_decoded_header: the 24 first decoded bits of the PBCH.
-
-        Returns:
-            tuple: (cell ident, number of users).
-        '''
-
-        if self.decoded_pbch == None:
-            raise ValueError('DecodeMatrix: extract_PBCH_header_data: self.decoded_pbch not defined (run self.decode_PBCH first)')
-
-        # Get the relevent part of the PBCH
-        pbch_decoded_header = self.decoded_pbch[:24] # the 24 first bits of the decoded PBCH correspond to cell ident (18 bits) and nb users (6 bits).
-    
-        # Retreiving cell ident (18 bits) and user number (6 bits)
-        cell_ident = bin2dec(pbch_decoded_header[:18])
-        user_nb = bin2dec(pbch_decoded_header[18:])
-
-        return (cell_ident, user_nb)
 
     def extract_PBCH_user_data(self, user_idx: int) -> dict[str, int]:
         '''
@@ -94,12 +130,11 @@ class DecodeMatrix:
         }
 
 
-    def retreive_PBCH(self) -> np.ndarray:
-        """retreives the PBCH (broadcast channel) from the matrix
-
-        Returns:
-            np.ndarray: the PBCH we retreived
-        """
-
-        pass
-
+##-Tests
+def test():
+    m1 = get_matrix('data/tfMatrix.csv')
+    d = DecodeMatrix(m1)
+    a = d.retreive_PBCH()
+    print(type(a))
+    print(type(a[0]))
+    print(len(a))

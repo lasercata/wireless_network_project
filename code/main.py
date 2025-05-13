@@ -5,6 +5,7 @@
 
 ##-Imports
 from src.utils import *
+from src.decode import test as test_decode #TODO: remove this in the future
 from tests.tests_hamming import *
 from tests.tests_modulation import *
 
@@ -32,3 +33,7 @@ if __name__ == '__main__':
     print('bpsk and qpsk tests passed')
     test_qam16()
     print('qam16 tests passed')
+
+    print('-'*16)
+    print('Testing decode:')
+    test_decode()

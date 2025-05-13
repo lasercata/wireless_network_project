@@ -1,8 +1,10 @@
 import numpy as np
 import math
 
-def bpsk_demod(v: np.ndarray) -> list[int]:
-    """BPSK demodulation (2 QAM).
+def bpsk_demod(v: np.ndarray | list[int]) -> list[int]:
+    """
+    BPSK demodulation (2 QAM).
+    The returned list is of the same length than the input one.
 
     Args:
         v (np.ndarray): input sequence.
