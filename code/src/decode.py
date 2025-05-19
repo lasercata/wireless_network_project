@@ -88,6 +88,8 @@ class DecodeMatrix:
             tuple[int, list[dict]]: (user_nb, [{'user_ident': <user_ident>, 'mcs': <mcs>, 'symb_start': <symb_start>, 'rb_start': <rb_start>, 'harq': <harq>}, ...])
         '''
 
+        #TODO: remove this useless method ?
+
         # Retreiving header data
         self.cell_ident, self.user_nb = self.decode_PBCH_header()
 
@@ -97,9 +99,33 @@ class DecodeMatrix:
 
         return self.user_nb, user_data
 
+    def decode_PBCH_user(self, user_ident: int) -> tuple[int, dict[str, int]]:
+        '''
+        Uses a method to retreive the PBCH from the matrix,
+        then demods (2qam) it and decodes it (Hamming748).
+        Retreives the cell ident and the number of users.
+        Then it parses all the matrix to find the user `user_ident`.
+
+        Args:
+            :user_ident: the user identifier.
+
+        Returns:
+            tuple[int, dict]: (user_nb, {'user_ident': <user_ident>, 'mcs': <mcs>, 'symb_start': <symb_start>, 'rb_start': <rb_start>, 'harq': <harq>})
+        '''
+
+        # Retreiving header data
+        self.cell_ident, self.user_nb = self.decode_PBCH_header()
+
+        for user_idx in range(self.user_nb):
+            if self.is_user_at_block(user_idx, user_ident):
+                extracted_data = self.extract_PBCH_user_data(user_idx)
+                return self.user_nb, extracted_data
+
+        raise ValueError(f'DecodeMatrix: decode_PBCH_user: user {user_ident} not found in the PBCH !')
+
     def extract_PBCH_user_data(self, user_idx: int) -> dict[str, int]:
         '''
-        TODO: Docstring for extract_PBCH_user_data.
+        Extracts the data from a 24 bits PBCHU block.
 
         Args:
             :user_idx: the index of the user to extract data.
@@ -128,6 +154,28 @@ class DecodeMatrix:
             'rb_start': rb_start,
             'harq': harq
         }
+
+    def is_user_at_block(self, user_idx: int, user_ident: int) -> bool:
+        '''
+        Extracts the user ident from the block at position `user_idx` and check if it is the same as `user_ident`.
+
+        Args:
+            :user_idx: the index of the user to extract data.
+            :user_ident: the user identifier.
+
+        Returns:
+            bool: PBCHU_k['user_ident'] == user_ident
+        '''
+
+        if self.decoded_pbch == None:
+            raise ValueError('DecodeMatrix: is_user_at_block: self.decoded_pbch not defined (run self.decode_PBCH first)')
+    
+        # Get the relevent part of the PBCH
+        pbchu_k = self.decoded_pbch[(user_idx + 1) * 24 : (user_idx + 2) * 24]
+
+        user_ident_from_mat = bin2dec(pbchu_k[:8]) # 8 bits for user ident
+
+        return user_ident == user_ident_from_mat
 
 
 ##-Tests
