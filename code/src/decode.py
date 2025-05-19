@@ -68,7 +68,7 @@ class DecodeMatrix:
             tuple: (cell ident, number of users).
         '''
     
-        header = self.retreive_PBCH()[:48] #TODO: is this correct ?
+        header = self.retreive_PBCH()[:48] #BUG: this is the wrong block
 
         decoded_header = self.demod_decode_block(header)
 
@@ -186,3 +186,5 @@ def test():
     print(type(a))
     print(type(a[0]))
     print(len(a))
+    d.decode_PBCH()
+    print(d.extract_PBCH_user_data(1))
