@@ -180,6 +180,11 @@ class DecodeMatrix:
 
 ##-Tests
 def test():
+    h = Hamming748()
+    print('--- HAMMING748 TEST ---')
+    print(h.decode([0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0]))
+    print('--- END OF HAMMING748 TEST ---')
+
     m1 = get_matrix('data/tfMatrix.csv')
     d = DecodeMatrix(m1)
     a = d.retreive_PBCH()

@@ -42,7 +42,14 @@ class Hamming748:
     
         res = []
         for k in range(len(y) // 8):
-            res += self.decode_block(y[k * 8 : (k + 1) * 8])
+            
+            print(f'--- DEBUG {k} ---')
+            y_ = y[k * 8 : (k + 1) * 8]
+            print(y_)
+            print(self._calc_syndrome(y_))
+            print(f'--- END OF DEBUG {k} ---')
+
+            res += self.decode_block(y_)
 
         return res
 
