@@ -5,8 +5,7 @@
 
 ##-Imports
 from src.utils import *
-from src.decode import test as test_decode #TODO: remove this in the future
-from src.decode import test_2 as test_decode_2 #TODO: remove this in the future
+from src.decode import test_decode_all_PBCH, test_decode_all_PDCCHU
 from tests.tests_hamming import *
 from tests.tests_modulation import *
 
@@ -40,11 +39,8 @@ if __name__ == '__main__':
     print('qam16 tests passed')
 
     print('-'*16)
-    print('Testing decode (user_ident = 16):')
-    test_decode(16)
-    test_decode(9)
-    # print('Testing decode:')
-    test_decode(12)
-
-    test_decode_2()
+    print('Testing decode:')
+    m1 = get_matrix('data/tfMatrix.csv')
+    test_decode_all_PBCH(m1)
+    test_decode_all_PDCCHU(m1)
 

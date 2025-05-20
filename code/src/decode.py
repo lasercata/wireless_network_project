@@ -6,7 +6,7 @@ import numpy as np
 
 from src.demod import bpsk_demod, qpsk_demod, qam16_demod
 from src.hamming748 import Hamming748
-from src.utils import bin2dec, get_matrix
+from src.utils import bin2dec, flatten_index, get_matrix
 
 ##-Utils
 def demod_decode_block(block: list[np.complex128], mcs: int = 0) -> list[int]:
@@ -15,19 +15,30 @@ def demod_decode_block(block: list[np.complex128], mcs: int = 0) -> list[int]:
 
     Args:
         :block: the complex block to demod and decode
-        :mcs:   an integer indicating which demodulation algorithm to use. 0: 2qam, 1: 4qam, 2: 16qam.
+        :mcs:   an integer indicating which demodulation algorithm to use. Possible values:
+                    0 : bpsk, Hamming748
+                    1 : not implemented in this project
+                    2 : qpsk, Hamming748
+                    3 : not implemented in this project
     '''
 
-    # demoded should be 48 bits long
     if mcs == 0:
         demoded = bpsk_demod(block)
+
     elif mcs == 1:
+        raise NotImplementedError('Not implemented in this project')
+
+    elif mcs == 2:
         demoded = qpsk_demod(block)
+
+    elif mcs == 3:
+        raise NotImplementedError('Not implemented in this project')
+
     else:
-        demoded = qam16_demod(block)
+        raise ValueError(f'mcs should be in [0 ; 3], but {mcs} was found !')
 
     h = Hamming748()
-    decoded = h.decode(demoded) # decoded should be 24 bits long
+    decoded = h.decode(demoded)
 
     return decoded
 
@@ -44,7 +55,7 @@ class DecodeMatrix:
         '''
 
         self.matrix = matrix
-        self.decoded_pbch = None
+        self.flattened_mat = None
 
         self.mat_idx = 0
 
@@ -70,7 +81,7 @@ class DecodeMatrix:
             for j in range(len(pbch_and_more[i])):
                 flatten_mat.append(pbch_and_more[i][j])
 
-        self.decoded_pbch = flatten_mat
+        self.flattened_mat = flatten_mat
         return flatten_mat
 
     def decode_PBCH_header(self) -> tuple[int, int]:
@@ -91,14 +102,14 @@ class DecodeMatrix:
 
         return (cell_ident, user_nb)
 
-    def decode_PBCH(self) -> tuple[int, list[dict[str, int]]]:
+    def decode_PBCH(self) -> tuple[int, int, list[dict[str, int]]]:
         '''
         Uses a method to retreive the PBCH from the matrix,
         then demods (2qam) it and decodes it (Hamming748).
         Retreives the cell ident and the number of users.
 
         Returns:
-            tuple[int, list[dict]]: (user_nb, [{'user_ident': <user_ident>, 'mcs': <mcs>, 'symb_start': <symb_start>, 'rb_start': <rb_start>, 'harq': <harq>}, ...])
+            tuple[int, int, list[dict]]: (cell_ident, user_nb, [{'user_ident': <user_ident>, 'mcs': <mcs>, 'symb_start': <symb_start>, 'rb_start': <rb_start>, 'harq': <harq>}, ...])
         '''
 
         #TODO: remove this useless method ?
@@ -110,9 +121,9 @@ class DecodeMatrix:
         for user_idx in range(self.user_nb):
             user_data.append(self.extract_PBCH_user_data(user_idx))
 
-        return self.user_nb, user_data
+        return self.cell_ident, self.user_nb, user_data
 
-    def decode_PBCH_user(self, user_ident: int) -> tuple[int, dict[str, int]]:
+    def decode_PBCH_user(self, user_ident: int) -> dict[str, int]:
         '''
         Uses a method to retreive the PBCH from the matrix,
         then demods (2qam) it and decodes it (Hamming748).
@@ -123,7 +134,7 @@ class DecodeMatrix:
             :user_ident: the user identifier.
 
         Returns:
-            tuple[int, dict]: (user_nb, {'user_ident': <user_ident>, 'mcs': <mcs>, 'symb_start': <symb_start>, 'rb_start': <rb_start>, 'harq': <harq>})
+            dict[str, int]: {'user_ident': <user_ident>, 'mcs': <mcs>, 'symb_start': <symb_start>, 'rb_start': <rb_start>, 'harq': <harq>}
         '''
 
         # Retreiving header data
@@ -132,7 +143,7 @@ class DecodeMatrix:
         for user_idx in range(self.user_nb):
             if self.is_user_at_block(user_idx, user_ident):
                 extracted_data = self.extract_PBCH_user_data(user_idx)
-                return self.user_nb, extracted_data
+                return extracted_data
 
         raise ValueError(f'DecodeMatrix: decode_PBCH_user: user {user_ident} not found in the PBCH !')
 
@@ -147,26 +158,20 @@ class DecodeMatrix:
             dict[str, int]: {'user_ident': <user_ident>, 'mcs': <mcs>, 'symb_start': <symb_start>, 'rb_start': <rb_start>, 'harq': <harq>}
         '''
 
-        if self.decoded_pbch == None:
-            raise ValueError('DecodeMatrix: extract_PBCH_user_data: self.decoded_pbch not defined (run self.decode_PBCH first)')
+        if self.flattened_mat == None:
+            raise ValueError('DecodeMatrix: extract_PBCH_user_data: self.flattened_mat not defined (run self.decode_PBCH first)')
     
         # Get the relevent part of the PBCH
-        pbchu_k = demod_decode_block(self.decoded_pbch[(user_idx + 1) * 48 : (user_idx + 2) * 48])
+        pbchu_k = demod_decode_block(self.flattened_mat[(user_idx + 1) * 48 : (user_idx + 2) * 48])
 
-        user_ident = bin2dec(pbchu_k[:8]) # 8 bits for user ident
-        mcs = bin2dec(pbchu_k[8:10]) # 2 bits for MCS of PDCCHU
-        symb_start = bin2dec(pbchu_k[10:14]) # 4 bits for Symb start of PDCCHU
-        rb_start = bin2dec(pbchu_k[14:20]) # 6 bits for RB start of PDCCHU
-        harq = bin2dec(pbchu_k[20:]) # 4 bits for HARQ of PDCCHU
+        ret = {}
+        ret['user_ident'] = bin2dec(pbchu_k[:8]) # 8 bits for user ident
+        ret['mcs'] = bin2dec(pbchu_k[8:10]) # 2 bits for MCS of PDCCHU
+        ret['symb_start'] = bin2dec(pbchu_k[10:14]) # 4 bits for Symb start of PDCCHU
+        ret['rb_start'] = bin2dec(pbchu_k[14:20]) # 6 bits for RB start of PDCCHU
+        ret['harq'] = bin2dec(pbchu_k[20:]) # 4 bits for HARQ of PDCCHU
 
-        # return (user_ident, mcs, symb_start, rb_start, harq)
-        return {
-            'user_ident': user_ident,
-            'mcs': mcs,
-            'symb_start': symb_start,
-            'rb_start': rb_start,
-            'harq': harq
-        }
+        return ret
 
     def is_user_at_block(self, user_idx: int, user_ident: int) -> bool:
         '''
@@ -180,34 +185,80 @@ class DecodeMatrix:
             bool: PBCHU_k['user_ident'] == user_ident
         '''
 
-        if self.decoded_pbch == None:
-            raise ValueError('DecodeMatrix: is_user_at_block: self.decoded_pbch not defined (run self.decode_PBCH first)')
+        if self.flattened_mat == None:
+            raise ValueError('DecodeMatrix: is_user_at_block: self.flattened_mat not defined (run self.decode_PBCH first)')
 
         # Get the relevent part of the PBCH
-        pbchu_k = demod_decode_block(self.decoded_pbch[(user_idx + 1) * 48 : (user_idx + 2) * 48]) #TODO: does not work for index 7 ...
+        pbchu_k = demod_decode_block(self.flattened_mat[(user_idx + 1) * 48 : (user_idx + 2) * 48]) #TODO: does not work for index 7 ...
 
         user_ident_from_mat = bin2dec(pbchu_k[:8]) # 8 bits for user ident
 
         return user_ident == user_ident_from_mat
 
+    def decode_PDCCHU_user(self, user_ident: int) -> dict[str, int]:
+        '''
+        Retreives the data from the PDCCHU concerning the user `user_ident` from the matrix using `self.decode_PBCH_user`.
+
+        Args:
+            :user_ident: the identifier of the user to retreive the data
+        
+        Returns:
+            dict[str, int]: {'user_ident': <user_ident>, 'mcs': <mcs>, 'symb_start': <symb_start>, 'rb_start': <rb_start>, 'crc': <crc>}
+        '''
+
+        self.retreive_PBCH()
+    
+        user_data = self.decode_PBCH_user(user_ident)
+
+        beg_index = flatten_index(user_data['symb_start'] - 3, (user_data['rb_start'] - 1) * 12)
+
+        modulated_data = self.flattened_mat[
+            beg_index : beg_index + 3 * 12
+        ]
+
+        decoded = demod_decode_block(modulated_data, user_data['mcs']) # 36 complex numbers -> 72 bits (4qam) -> 36 bits (Hamming748)
+
+        ret = {}
+        ret['user_ident'] = bin2dec(decoded[:8]) # 8 bits
+        ret['mcs'] = bin2dec(decoded[8:14]) # 6 bits
+        ret['symb_start'] = bin2dec(decoded[14:18]) # 4 bits
+        ret['rb_start'] = bin2dec(decoded[18:24]) # 6 bits
+        ret['rb_size'] = bin2dec(decoded[24:34]) # 10 bits
+        ret['crc'] = bin2dec(decoded[34:36]) # 2 bits
+
+        return ret
+
 
 ##-Tests
-def test(user_ident=9):
+def test_decode_PBCH_user(user_ident=9):
     m1 = get_matrix('data/tfMatrix.csv')
     d = DecodeMatrix(m1)
-    a = d.retreive_PBCH()
-    print(type(a))
-    print(type(a[0]))
-    print(len(a))
-
     u = d.decode_PBCH_user(user_ident)
     print(u)
 
-def test_2():
-    m1 = get_matrix('data/tfMatrix.csv')
-    d = DecodeMatrix(m1)
-    # a = d.retreive_PBCH()
+def test_decode_all_PBCH(matrix):
+    '''Tests the `DecodeMatrix.decode_PBCH_user` method.'''
 
-    for k in d.decode_PBCH()[1]:
-        print(k)
+    d = DecodeMatrix(matrix)
+    cell_ident, nb_users = d.decode_PBCH_header()
+
+    print('\nPBCH decoded data :')
+    print(f'    cell_ident: {cell_ident}')
+    print(f'    nb_users: {nb_users}\n')
+
+    for user_ident in range(1, nb_users + 1):
+        user_data = d.decode_PBCH_user(user_ident)
+        print(f'    {user_data}')
+
+def test_decode_all_PDCCHU(matrix):
+    '''Tests the `DecodeMatrix.decode_PDCCHU_user` method.'''
+
+    d = DecodeMatrix(matrix)
+    _, nb_users = d.decode_PBCH_header()
+
+    print('\nPDCCHU decoded data :')
+
+    for user_ident in range(1, nb_users + 1):
+        data = d.decode_PDCCHU_user(user_ident)
+        print('    ' + str(data))
 

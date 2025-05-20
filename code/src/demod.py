@@ -24,7 +24,9 @@ def bpsk_demod(v: np.ndarray | list[np.complex128]) -> list[int]:
     return ret
 
 def qpsk_demod(v: np.ndarray | list[np.complex128]) -> list[int]:
-    """QPSK demodulation.
+    """
+    QPSK demodulation.
+    The length of the returned list is the twice the length of the input one.
 
     Args:
         v (np.ndarray): input sequence.
