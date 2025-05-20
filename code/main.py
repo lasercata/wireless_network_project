@@ -6,6 +6,7 @@
 ##-Imports
 from src.utils import *
 from src.decode import test as test_decode #TODO: remove this in the future
+from src.decode import test_2 as test_decode_2 #TODO: remove this in the future
 from tests.tests_hamming import *
 from tests.tests_modulation import *
 
@@ -22,6 +23,10 @@ def test_matrix():
     # print_matrix(m1)
     power_distrib_graph(m1)
 
+    # data = np.genfromtxt('data/tfMatrix.csv', delimiter=';')
+    # m2 = data[:,0::2] + 1j * data[:,1::2] # Merges the real and imaginary part of the signal
+    # power_distrib_graph(m2)
+
 ##-Run
 if __name__ == '__main__':
     # test_matrix()
@@ -35,5 +40,11 @@ if __name__ == '__main__':
     print('qam16 tests passed')
 
     print('-'*16)
-    print('Testing decode:')
-    test_decode()
+    print('Testing decode (user_ident = 16):')
+    test_decode(16)
+    test_decode(9)
+    # print('Testing decode:')
+    test_decode(12)
+
+    test_decode_2()
+

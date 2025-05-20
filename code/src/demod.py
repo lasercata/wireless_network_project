@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-def bpsk_demod(v: np.ndarray | list[int]) -> list[int]:
+def bpsk_demod(v: np.ndarray | list[np.complex128]) -> list[int]:
     """
     BPSK demodulation (2 QAM).
     The returned list is of the same length than the input one.
@@ -23,7 +23,7 @@ def bpsk_demod(v: np.ndarray | list[int]) -> list[int]:
 
     return ret
 
-def qpsk_demod(v: np.ndarray) -> list[int]:
+def qpsk_demod(v: np.ndarray | list[np.complex128]) -> list[int]:
     """QPSK demodulation.
 
     Args:
@@ -48,7 +48,7 @@ def qpsk_demod(v: np.ndarray) -> list[int]:
 
     return ret
 
-def qam16_demod(v: np.ndarray) -> list[int]:
+def qam16_demod(v: np.ndarray | list[np.complex128]) -> list[int]:
     """qam16 demodulation.
 
     Args:

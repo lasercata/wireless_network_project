@@ -4,9 +4,32 @@
 ##-Imports
 import numpy as np
 
-from src.demod import bpsk_demod
+from src.demod import bpsk_demod, qpsk_demod, qam16_demod
 from src.hamming748 import Hamming748
 from src.utils import bin2dec, get_matrix
+
+##-Utils
+def demod_decode_block(block: list[np.complex128], mcs: int = 0) -> list[int]:
+    '''
+    Demods (using 2QAM, 4QAM or 16QAM according to `mcs`) and then decodes (using Hamming748) the 48 bits block into a 24 bits block.
+
+    Args:
+        :block: the complex block to demod and decode
+        :mcs:   an integer indicating which demodulation algorithm to use. 0: 2qam, 1: 4qam, 2: 16qam.
+    '''
+
+    # demoded should be 48 bits long
+    if mcs == 0:
+        demoded = bpsk_demod(block)
+    elif mcs == 1:
+        demoded = qpsk_demod(block)
+    else:
+        demoded = qam16_demod(block)
+
+    h = Hamming748()
+    decoded = h.decode(demoded) # decoded should be 24 bits long
+
+    return decoded
 
 ##-DecodeMatrix
 class DecodeMatrix:
@@ -25,23 +48,21 @@ class DecodeMatrix:
 
         self.mat_idx = 0
 
-    def retreive_PBCH(self) -> list[int]:
+    def retreive_PBCH(self) -> list[np.complex128]:
         '''
-        Retreives the PBCH (broadcast channel) from the matrix
+        Retreives the PBCH (broadcast channel) from the matrix.
         It also flattens the matrix.
 
-        TODO: currently, it only removes (supposedely) the synchronisation symbols.
+        In fact, it only removes the synchronisation symbols.
+
+        Notes: We only know the beginning of it (third line, or more precisely, the first symbol that is not used for synchronisation).
+        The lenght depends on the number of users.
 
         Returns:
             np.ndarray: the PBCH we retreived
         '''
 
         pbch_and_more = self.matrix[2:] # The PBCH starts from the third line.
-        #TODO: is this correct ?
-
-        # Notes: We only know the beginning of it (third line, or more precisely, the first symbol that is not used for synchronisation).
-        # The lenght depends on the number of users.
-        #TODO: It is also needed to make a function that only checks the user_ident (and not the other useless fields) and checks if it correspond to the wanted user_idx.
 
         # Flatten the matrix
         flatten_mat = []
@@ -49,16 +70,8 @@ class DecodeMatrix:
             for j in range(len(pbch_and_more[i])):
                 flatten_mat.append(pbch_and_more[i][j])
 
+        self.decoded_pbch = flatten_mat
         return flatten_mat
-
-    def demod_decode_block(self, block: list[int]) -> list[int]:
-        '''Demods (using 2QAM) and then decodes (using Hamming748) the 48 bits block into a 24 bits block.'''
-
-        demoded = bpsk_demod(block) # demoded should be 48 bits long
-        h = Hamming748()
-        decoded = h.decode(demoded) # decoded should be 24 bits long
-
-        return decoded
 
     def decode_PBCH_header(self) -> tuple[int, int]:
         '''
@@ -68,9 +81,9 @@ class DecodeMatrix:
             tuple: (cell ident, number of users).
         '''
     
-        header = self.retreive_PBCH()[:48] #BUG: this is the wrong block
+        header = self.retreive_PBCH()[:48]
 
-        decoded_header = self.demod_decode_block(header)
+        decoded_header = demod_decode_block(header, 0) # 0 for 2qam
 
         # Retreiving cell ident (18 bits) and user number (6 bits)
         cell_ident = bin2dec(decoded_header[:18])
@@ -138,7 +151,7 @@ class DecodeMatrix:
             raise ValueError('DecodeMatrix: extract_PBCH_user_data: self.decoded_pbch not defined (run self.decode_PBCH first)')
     
         # Get the relevent part of the PBCH
-        pbchu_k = self.decoded_pbch[(user_idx + 1) * 24 : (user_idx + 2) * 24]
+        pbchu_k = demod_decode_block(self.decoded_pbch[(user_idx + 1) * 48 : (user_idx + 2) * 48])
 
         user_ident = bin2dec(pbchu_k[:8]) # 8 bits for user ident
         mcs = bin2dec(pbchu_k[8:10]) # 2 bits for MCS of PDCCHU
@@ -169,9 +182,9 @@ class DecodeMatrix:
 
         if self.decoded_pbch == None:
             raise ValueError('DecodeMatrix: is_user_at_block: self.decoded_pbch not defined (run self.decode_PBCH first)')
-    
+
         # Get the relevent part of the PBCH
-        pbchu_k = self.decoded_pbch[(user_idx + 1) * 24 : (user_idx + 2) * 24]
+        pbchu_k = demod_decode_block(self.decoded_pbch[(user_idx + 1) * 48 : (user_idx + 2) * 48]) #TODO: does not work for index 7 ...
 
         user_ident_from_mat = bin2dec(pbchu_k[:8]) # 8 bits for user ident
 
@@ -179,17 +192,22 @@ class DecodeMatrix:
 
 
 ##-Tests
-def test():
-    h = Hamming748()
-    print('--- HAMMING748 TEST ---')
-    print(h.decode([0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0]))
-    print('--- END OF HAMMING748 TEST ---')
-
+def test(user_ident=9):
     m1 = get_matrix('data/tfMatrix.csv')
     d = DecodeMatrix(m1)
     a = d.retreive_PBCH()
     print(type(a))
     print(type(a[0]))
     print(len(a))
-    d.decode_PBCH()
-    print(d.extract_PBCH_user_data(1))
+
+    u = d.decode_PBCH_user(user_ident)
+    print(u)
+
+def test_2():
+    m1 = get_matrix('data/tfMatrix.csv')
+    d = DecodeMatrix(m1)
+    # a = d.retreive_PBCH()
+
+    for k in d.decode_PBCH()[1]:
+        print(k)
+
