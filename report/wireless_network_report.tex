@@ -70,6 +70,8 @@
     \newpage
     % }}}1
 
+    % TODO : develop the bullet points
+
     \begin{indt}{\section{Project Context}} %{{{1
         what's the goal of the project ?
     \end{indt}
@@ -79,6 +81,7 @@
     \end{indt}
 
     \begin{indt}{\section{How does it work ?}}
+        % TODO : add subsection for each big part like PBCH, PDSCH, ...
         - we retreive pbch from matrix
         - we used the bpsk to modulate the pbch because the information it contains is crucial to retreive the user data from the matrix. Indeed with only two possible values, we decrease the amount of information we can stock but this latter is way more protected and more reliable because much less noise sensitive. (insert an image of the different modulation that exist to illustrate statement)
         - we read the user & cell ident
