@@ -42,6 +42,8 @@
 %------Logo
 % \setlogo[pics/logo.png] %Comment to remove the logo
 % \fancyfoot[LO, RE]{\includegraphics[scale=0.05]{pics/logo.png}}
+
+\usepackage{forest}
 %}}}1
 
 %------Title (with default LaTeX style)
@@ -71,11 +73,96 @@
     %TODO : develop the bullet points
 
     \begin{indt}{\section{Project Context}} %{{{1
-        What's the goal of the project ?
-    \end{indt}
+        This project aims to implement a receiver / decoder of a simplified 5G NR signal.
+    \end{indt} %}}}1
 
     \begin{indt}{\section{Project architecture}}% {{{1
-        Here explain the project file tree and the use of each folder
+        \begin{indt}{\subsection{File tree}} %{{{2
+            \begin{figure}[H]% {{{3
+                \centering
+        
+                \begin{forest}
+                    for tree={% {{{4
+                        font=\sffamily,
+                        text=black,
+                        % text width=2cm,
+                        % minimum height=0.75cm,
+                        % if level=0
+                        % {fill=ff4500}
+                        % {draw=black},
+                        rounded corners=4pt,
+                        grow'=0,
+                        child anchor=west,
+                        parent anchor=south,
+                        anchor=west,
+                        calign=first,
+                        edge={ff4500, rounded corners=1pt, line width=1pt},
+                        edge path={
+                            \noexpand\path [draw, \forestoption{edge}]
+                            (!u.south west) +(0pt,0) |- (.child anchor)\forestoption{edge label};
+                        },
+                        before typesetting nodes={
+                            if n=1
+                            {insert before={[,phantom]}}
+                            {}
+                        },
+                        fit=band,
+                        s sep=0pt,
+                        before computing xy={l=25pt},
+                    }% }}}4
+                    [
+                        [\textcolor{00f}{report/}]
+                        [\textcolor{00f}{topic/}]
+                        [\textcolor{00f}{data/}
+                            [tfMatrix.csv]
+                            [tfMatrix\_2.csv]
+                            [tfMatrix\_3.csv]
+                        ]
+                        [\textcolor{00f}{code/}
+                            [main.py]
+                            [\textcolor{00f}{src/}
+                                [binary\_transformation.py]
+                                [crc.py]
+                                [decode.py]
+                                [demod.py]
+                                [hamming748.py]
+                                [utils.py]
+                            ]
+                            [\textcolor{00f}{tests/}
+                                [tests\_hamming.py]
+                                [tests\_modulation.py]
+                                [utils.py]
+                            ]
+                        ]
+                        [README.sh]
+                    ]
+                \end{forest}
+        
+                \caption{Project file structure}
+                \label{fig:forest}
+            \end{figure}% }}}3
+        \end{indt} %}}}2
+
+        \begin{indt}{\subsection{Files description}} %{{{2
+            The folder \texttt{\textcolor{00f}{data/}} contains the matrix. The matrix 1 and 3 are correct and should be correctly decoded, but the matrix 2 had a very bad transmission and cannot be recovered. 
+            
+            The folder \texttt{\textcolor{00f}{code/}} contains the implementation.
+            
+            The main file is \texttt{\textcolor{00f}{code/}main.py}. It contains a very simple command line parser to run the code with the wanted matrix.
+            The usage is detailed in the readme file (and with the \texttt{-h} flag).
+            
+            The file \texttt{\textcolor{00f}{code/src/}utils.py} contains general functions to manage matrix (getting from file, display, flatten index, ...)
+            
+            The file \texttt{\textcolor{00f}{code/src/}demod.py} implements multiple demodulation functions (\texttt{bpsk}, \texttt{qpsk}, \texttt{16qam}).
+            
+            The file \texttt{\textcolor{00f}{code/src/}decode.py} implements the decoding of a matrix (for a given user identifier).
+            It uses the other files to do so.
+            It is implemented using the object oriented paradigm.
+            
+            The folder \texttt{\textcolor{00f}{code/tests/}} defines unit tests on hamming and modulation.
+            
+            The file \texttt{\textcolor{00f}{code/tests/}utils.py} useful functions for the unit tests.
+        \end{indt} %}}}2
     \end{indt}% }}}1
 
     \begin{indt}{\section{How does it work ?}}% {{{1
