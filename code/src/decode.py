@@ -63,12 +63,12 @@ def demod_decode_PDSCH_block(block: list[np.complex128], mcs: int) -> list[int]:
             mcs // 5:
                 0 for 1/3,
                 1 for 1/2 (implemented),
-                3 for 2/3,
-                4 for 3/4,
-                5 for 1/3 Hamming124,
-                6 for 1/2 Hamming748 (implemented),
-                7 for 2/3 Hamming128,
-                8 for 3/4 Hamming2416
+                2 for 2/3,
+                3 for 3/4,
+                4 for 1/3 Hamming124,
+                5 for 1/2 Hamming748 (implemented),
+                6 for 2/3 Hamming128,
+                7 for 3/4 Hamming2416
     '''
 
     #---Demodulation
@@ -89,7 +89,7 @@ def demod_decode_PDSCH_block(block: list[np.complex128], mcs: int) -> list[int]:
 
         decoded = [int(k) for k in decoded_]
 
-    elif mcs // 5 == 7:
+    elif mcs // 5 == 5:
         h = Hamming748()
         decoded = h.decode(demoded)
 
@@ -99,7 +99,7 @@ def demod_decode_PDSCH_block(block: list[np.complex128], mcs: int) -> list[int]:
     return decoded
 
 def payload_to_str(payload: list[int], user_ident: int) -> str:
-    '''TODO: Docstring for payload_to_str.'''
+    '''Converts a data block into an ASCII string.'''
 
     msg = bitToByte(payload)
     clear_msg = cesarDecode(user_ident, msg)
@@ -176,8 +176,6 @@ class DecodeMatrix:
             tuple[int, int, list[dict]]: (cell_ident, user_nb, [{'user_ident': <user_ident>, 'mcs': <mcs>, 'symb_start': <symb_start>, 'rb_start': <rb_start>, 'harq': <harq>}, ...])
         '''
 
-        #TODO: remove this useless method ?
-
         # Retreiving header data
         self.cell_ident, self.user_nb = self.decode_PBCH_header()
 
@@ -253,7 +251,7 @@ class DecodeMatrix:
             raise ValueError('DecodeMatrix: is_user_at_block: self.flattened_mat not defined (run self.decode_PBCH first)')
 
         # Get the relevent part of the PBCH
-        pbchu_k = demod_decode_block(self.flattened_mat[(user_idx + 1) * 48 : (user_idx + 2) * 48]) #TODO: does not work for index 7 ...
+        pbchu_k = demod_decode_block(self.flattened_mat[(user_idx + 1) * 48 : (user_idx + 2) * 48])
 
         user_ident_from_mat = bin2dec(pbchu_k[:8]) # 8 bits for user ident
 
@@ -274,7 +272,13 @@ class DecodeMatrix:
 
         beg_index = flatten_index(user_data['symb_start'] - 3, (user_data['rb_start'] - 1) * 12)
 
-        modulated_data = self.flattened_mat[beg_index : beg_index + 3 * 12]
+        #TODO: this is an ugly fix. The number of resource blocks used for a PDCCHU section is hardcoded to 3 if mcs is 2, or 6 otherwise (mcs is 0).
+        if user_data['mcs'] == 2:
+            nb_of_rb = 3
+        else:
+            nb_of_rb = 6
+
+        modulated_data = self.flattened_mat[beg_index : beg_index + nb_of_rb * 12]
 
         decoded = demod_decode_block(modulated_data, user_data['mcs']) # 36 complex numbers -> 72 bits (4qam) -> 36 bits (Hamming748)
 
@@ -289,9 +293,11 @@ class DecodeMatrix:
         return ret
 
     def get_payload_user(self, user_ident: int) -> list[int]:
-        '''TODO: Docstring for get_payload_user.
+        '''
+        Retreives the data corresponding to the user `user_ident`.
 
-        - user_ident : TODO
+        Args:
+            :user_ident: the identifier of the user.
         '''
     
         #-Get the data
@@ -356,7 +362,8 @@ def test_decode_all_payloads(matrix):
     d = DecodeMatrix(matrix)
     _, nb_users = d.decode_PBCH_header()
 
-    print('\npayload data :')
+    print(f'\nNumber of users: {nb_users}')
+    print('payload data :')
 
     for user_ident in range(1, nb_users + 1):
         try:
@@ -364,6 +371,7 @@ def test_decode_all_payloads(matrix):
             s_pay = ''.join(str(k) for k in payload)
             print(f'    User #{user_ident}: {s_pay}')
             print(payload_to_str(payload, user_ident))
+
         except ValueError as err:
             print(f'    User #{user_ident}: error: {err}')
 

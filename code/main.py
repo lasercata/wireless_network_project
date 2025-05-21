@@ -30,10 +30,11 @@ def test_matrix():
     # power_distrib_graph(m2)
     pass
 
-def run_tests():
+def run_tests(matrix, display=True):
     '''Run tests'''
 
-    # test_matrix()
+    if display:
+        power_distrib_graph(matrix)
 
     test_hammingDecode()
 
@@ -45,14 +46,10 @@ def run_tests():
 
     print('-'*16)
     print('Testing decode:')
-    m1 = get_matrix('data/tfMatrix.csv')
-    # m1 = get_matrix('data/tfMatrix_3.csv')
-    # power_distrib_graph(m1)
+    test_decode_all_PBCH(matrix)
+    test_decode_all_PDCCHU(matrix)
 
-    test_decode_all_PBCH(m1)
-    test_decode_all_PDCCHU(m1)
-
-    test_decode_all_payloads(m1)
+    test_decode_all_payloads(matrix)
 
 def print_help(argv):
     '''Prints the help message for the parser and exits.'''
@@ -62,7 +59,7 @@ def print_help(argv):
     print(f'\nExamples:')
     print(f'    To decode for user 3:    {argv[0]} data/tfMatrix.csv 3')
     print(f'    To decode for all users: {argv[0]} data/tfMatrix.csv')
-    print(f'    To run all tests:        {argv[0]} -t')
+    print(f'    To run all tests:        {argv[0]} data/tfMatrix.csv -t')
     sysexit()
 
 def parser(argv):
@@ -71,9 +68,11 @@ def parser(argv):
     if len(argv) <= 1 or '-h' in argv or '--help' in argv:
         print_help(argv) # also exists
 
-    if argv[1].lower() == '-t':
-        run_tests()
-        sysexit()
+    testing = False
+    if '-t' in argv:
+        testing = True
+
+        del argv[argv.index('-t')]
 
     if argv[1][0] == '-':
         print(f'Invalid argument "{argv[1]}"')
@@ -86,7 +85,10 @@ def parser(argv):
         print(f'File "{fn}" not found !')
         sysexit()
 
-    if len(argv) == 2: # Show all users
+    if testing:
+        run_tests(m)
+
+    elif len(argv) == 2: # Show all users
         test_decode_all_payloads(m)
 
     else:

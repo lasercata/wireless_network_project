@@ -22,5 +22,5 @@ Or, to run the tests: code/main.py -t
 Examples:
     To decode for user 3:    code/main.py data/tfMatrix.csv 3
     To decode for all users: code/main.py data/tfMatrix.csv
-    To run all tests:        code/main.py -t
+    To run all tests:        code/main.py data/tfMatrix.csv -t
 ```

@@ -38,13 +38,11 @@ def get_matrix(fn: str) -> list[list[np.complex128]]:
     N = 1024
 
     # bound_1 = N_Re // 2 - 1
+    # bound_2 = N - (N_Re // 2) + 1
     bound_1 = N_Re // 2 + 1
     bound_2 = N - (N_Re // 2)
-    # bound_2 = N - (N_Re // 2) + 1
 
     # The short matrix is from range [0 : bound_1] + [bound_2 : ]
-    # print(f'1 : {bound_1} ; {bound_2 + 1} : {N}')
-
     a = [
         [mat_complex[i][j] for j in range(1, bound_1 + 1)]
         + [mat_complex[i][j] for j in range(bound_2 + 1, N)]
