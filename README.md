@@ -16,11 +16,11 @@ Have fun !
 ```
 $ python3 code/main.py
 
-Usage: code/main.py matrix_filename [user_ident]
-Or, to run the tests: code/main.py -t
+Usage: code/main.py [-v] [-t] matrix_filename [user_ident]
 
 Examples:
-    To decode for user 3:    code/main.py data/tfMatrix.csv 3
-    To decode for all users: code/main.py data/tfMatrix.csv
-    To run all tests:        code/main.py data/tfMatrix.csv -t
+    To decode for user 3:                  code/main.py data/tfMatrix.csv 3
+    To decode for user 3 and show more:    code/main.py data/tfMatrix.csv 3 -v
+    To decode for all users:               code/main.py data/tfMatrix.csv
+    To run all tests:                      code/main.py data/tfMatrix.csv -t
 ```

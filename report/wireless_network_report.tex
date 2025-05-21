@@ -1,0 +1,280 @@
+\documentclass[a4paper, 12pt, twoside]{article}
+
+
+%------------------------------------------------------------------------
+%
+% Author                :   Lasercata
+% Last modification     :   2025.05.21
+%
+%------------------------------------------------------------------------
+
+%---------Init {{{1
+%------Lang
+% \usepackage[french]{babel}
+%\usepackage[english]{babel}
+
+
+%See https://github.com/lasercata/LaTeX_Templates for the file latex_base.sty
+% \input{~/Templates/latex_base.sty}
+\input{latex_base.sty}
+
+
+%------Circuitikz
+%\usetikzlibrary{babel}             %Uncomment this to use circuitikz
+%\usetikzlibrary{shapes.geometric}  % To draw triangles in trees
+%\usepackage[european]{circuitikz}            %Electrical circuits drawing
+
+%------Sections
+%---To change section numbering :
+% \renewcommand\thesection{\Roman{section}}
+% \renewcommand\thesubsection{\arabic{subsection})}
+% \renewcommand\thesubsubsection{\textit \alph{subsubsection})}
+
+%---To start numbering sections from 0
+% \setcounter{section}{-1}
+
+%---To hide subsubsection from the table of contents (show with max depth of 2)
+% \setcounter{tocdepth}{2}
+
+
+%------Logo
+% \setlogo[pics/logo.png] %Comment to remove the logo
+% \fancyfoot[LO, RE]{\includegraphics[scale=0.05]{pics/logo.png}}
+
+\usepackage{forest}
+%}}}1
+
+% \input{data/data.sty}
+\input{data/data_template.sty}
+
+%------Title (with default LaTeX style)
+\title{Wireless Project -- Report}
+\author{
+    \\ \NameA
+    \\ \NameB
+}
+\date{
+    \today
+}
+
+%---------------------------------Begin Document
+\begin{document}
+    
+    % Title {{{1
+    % \thetitle{}{}
+    \maketitle
+
+    \tableofcontents
+    % \listoffigures
+    % \listoftables
+    % \listofalgorithms
+    \newpage
+    % }}}1
+
+    \begin{indt}{\section{Project Context}} %{{{1
+        This project aims to implement a receiver / decoder of a simplified 5G NR signal.
+    \end{indt} %}}}1
+
+    \begin{indt}{\section{Project architecture}}% {{{1
+        \begin{indt}{\subsection{File tree}} %{{{2
+            \begin{figure}[H]% {{{3
+                \centering
+        
+                \begin{forest}
+                    for tree={% {{{4
+                        font=\sffamily,
+                        text=black,
+                        % text width=2cm,
+                        % minimum height=0.75cm,
+                        % if level=0
+                        % {fill=ff4500}
+                        % {draw=black},
+                        rounded corners=4pt,
+                        grow'=0,
+                        child anchor=west,
+                        parent anchor=south,
+                        anchor=west,
+                        calign=first,
+                        edge={ff4500, rounded corners=1pt, line width=1pt},
+                        edge path={
+                            \noexpand\path [draw, \forestoption{edge}]
+                            (!u.south west) +(0pt,0) |- (.child anchor)\forestoption{edge label};
+                        },
+                        before typesetting nodes={
+                            if n=1
+                            {insert before={[,phantom]}}
+                            {}
+                        },
+                        fit=band,
+                        s sep=0pt,
+                        before computing xy={l=25pt},
+                    }% }}}4
+                    [
+                        [\textcolor{00f}{report/}]
+                        [\textcolor{00f}{topic/}]
+                        [\textcolor{00f}{data/}
+                            [tfMatrix.csv]
+                            [tfMatrix\_2.csv]
+                            [tfMatrix\_3.csv]
+                        ]
+                        [\textcolor{00f}{code/}
+                            [main.py]
+                            [\textcolor{00f}{src/}
+                                [binary\_transformation.py]
+                                [crc.py]
+                                [decode.py]
+                                [demod.py]
+                                [hamming748.py]
+                                [utils.py]
+                            ]
+                            [\textcolor{00f}{tests/}
+                                [tests\_hamming.py]
+                                [tests\_modulation.py]
+                                [utils.py]
+                            ]
+                        ]
+                        [README.sh]
+                    ]
+                \end{forest}
+        
+                \caption{Project file structure}
+                \label{fig:forest}
+            \end{figure}% }}}3
+        \end{indt} %}}}2
+
+        \begin{indt}{\subsection{Files description}} %{{{2
+            The folder \texttt{\textcolor{00f}{data/}} contains the matrix. The matrix 1 and 3 are correct and should be correctly decoded, but the matrix 2 had a very bad transmission and cannot be recovered. 
+            
+            The folder \texttt{\textcolor{00f}{code/}} contains the implementation.
+            
+            The main file is \texttt{\textcolor{00f}{code/}main.py}. It contains a very simple command line parser to run the code with the wanted matrix.
+            The usage is detailed in the readme file (and with the \texttt{-h} flag).
+            
+            The file \texttt{\textcolor{00f}{code/src/}utils.py} contains general functions to manage matrix (getting from file, display, flatten index, ...)
+            
+            The file \texttt{\textcolor{00f}{code/src/}demod.py} implements multiple demodulation functions (\texttt{bpsk}, \texttt{qpsk}, \texttt{16qam}).
+            
+            The file \texttt{\textcolor{00f}{code/src/}decode.py} implements the decoding of a matrix (for a given user identifier).
+            It uses the other files to do so.
+            It is implemented using the object oriented paradigm.
+            
+            The folder \texttt{\textcolor{00f}{code/tests/}} defines unit tests on hamming and modulation.
+            
+            The file \texttt{\textcolor{00f}{code/tests/}utils.py} useful functions for the unit tests.
+        \end{indt} %}}}2
+    \end{indt}% }}}1
+
+    \begin{indt}{\section{How does it work ?}}% {{{1
+        \begin{indt}{\subsection{Matrix loading and shortening}} %{{{2
+            We load the matrix using the function \lstinline[language=python]{get_matrix(fn: str)} from \texttt{\textcolor{00f}{code/src/}utils.py}
+
+            This function reads the CSV file, and makes a matrix of complex numbers.
+
+            As is, the matrix contains 1024 columns, corresponding to the size of the FFT.
+            But in the 5G NR, only 624 symbols are used, in the range described in the subject.
+
+            The function also removes the unused parts.
+        \end{indt} %}}}2
+
+        \begin{indt}{\subsection{PBCH decoding}} %{{{2
+            Once we get the complex matrix, it is given to the class \lstinline[language=python]{DecodeMatrix} (in the file \texttt{\textcolor{00f}{code/src/ }decode.py}).
+
+            First we remove the part before the start of the PBCH (the two first lines / symbols), and we flatten the matrix (done in the method \lstinline[language=python]{retrieve_PBCH}).
+
+            Then we use the method \lstinline[language=python]{decode_PBCH_user(user_ident: int)} that first demodulates and decodes the PBCH header (retrieving \texttt{cell\_ident} and the number of users).
+
+            For the first matrix, we get 18 users and a cell identifier of 12345
+
+            We note that the PBCH is modulated using bpsk, and this is because it is the most reliable modulation, with only two symbols possible. It is needed to use a robust one here (even if less information can be transmitted in the same amount of time) because the informations contained in the PBCH are important for the rest of the signal.
+
+            Then, this method will walk in the linearised complex matrix (by steps of 48) to search for the corresponding \texttt{user\_ident}.
+            To check this, the method \lstinline[language=python]{is_user_at_block(user_idx: int, user_ident: int) -> bool} is used.
+
+            When the corresponding user is found (the one with the \texttt{user\_ident} we selected), the method \lstinline[language=python]{extract_PBCH_user_data(user_idx: int) -> dict[str, int]}.
+
+            \vspace{12pt}
+            
+            Now we have, for the selected user, the position and modulation used for the corresponding PDCCHU.
+        \end{indt} %}}}2
+
+        \begin{indt}{\subsection{PDCCHU decoding}} %{{{2
+            With the information provided by the PBCHU, we can get the right portion of the matrix corresponding to the PDCCHU: it starts at line \texttt{symbol\_start} and column \texttt{rb\_start}.
+
+            However, it is not very clear how the length of the block should be recovered. The current fix is the following: if \texttt{mcs} is 2, then the length of the block is of 3 resource blocks, otherwise (\texttt{mcs} is 0), the length is 6 resource blocks.
+            This is because bpsk keeps the same length, and qpsk double the length when demodulating.
+
+            Then, with the value of \texttt{mcs}, the block is demodulated and decoded (see the function \lstinline[language=python]{demod_decode_block(block: list[complex128], mcs: int) -> list[int]})
+
+            Then the data is recovered by segmenting the result and converting to decimal.
+        \end{indt} %}}}2
+
+        \begin{indt}{\subsection{Getting the payload}} %{{{2
+            Now we can get the payload.
+            Using the informations in the PDCCHU, we have the position of the start and the length of the block.
+
+            The demodulation and the decoding is implemented in the \lstinline[language=python]{demod_decode_PDSCH_block(block: list[complex128], mcs: int) -> list[int]} function.
+
+            Once demodulated and decoded, the integrity of the data is checked with the CRC.
+
+            There is one thing that is not implemented here: the padding is not removed, so when converting to a string, there is some garbage at the end.
+
+            Also, for some users, the CRC is not correct.
+        \end{indt} %}}}2
+
+        \begin{indt}{\subsection{Getting the message}} %{{{2
+            To convert the payload to an ASCII string, we use the function \lstinline[language=python]{payload_to_str(payload: list[int], user_ident: int) -> str}.
+            It uses functions from the given file \texttt{\textcolor{00f}{code/src/ }binary\_transformation.py} to convert to bytes and then to decrypt (Caesar).
+        \end{indt} %}}}2
+    \end{indt}% }}}1
+
+    \begin{indt}{\section{Result}} %{{{1
+        Our implementation mostly works: it is able to retrieve the message for most users for matrix one and three (and of course not for the second matrix that contains way too much noise).
+
+        But the CRC is wrong for some users (this might be a bug in our implementation).
+
+        Also, the padding is not removed, so the message strings contains garbage in their ends.
+
+        \vspace{12pt}
+        
+        We tried to make the implementation as general as possible, using variables when needed instead of hard-coding values.
+
+        It is possible to select the wanted user and matrix directly from the command line using the simple parser (as described in the README).
+
+        \vspace{12pt}
+        
+        Output examples:
+        % {{{2
+        \begin{lstlisting}[xleftmargin=40pt]
+$ python3 code/main.py data/tfMatrix.csv 3 -v
+
+PBCHU: {'user_ident': 3, 'mcs': 2, 'symb_start': 5, 'rb_start': 9, 'harq': 0}
+PDCCHU: {'user_ident': 3, 'mcs': 7, 'symb_start': 11, 'rb_start': 39, 'rb_size': 27, 'crc_flag': 0}
+
+User 3: your key is 37
+Never gonna give you up
+Never gonna let you down
+ ...
+Ne \end{lstlisting}% }}}2
+
+        % a
+
+        % {{{2
+        \begin{lstlisting}[xleftmargin=40pt]
+$ python3 code/main.py data/tfMatrix_3.csv 3 -v
+
+PBCHU: {'user_ident': 3, 'mcs': 0, 'symb_start': 5, 'rb_start': 33, 'harq': 0}
+PDCCHU: {'user_ident': 3, 'mcs': 26, 'symb_start': 11, 'rb_start': 9, 'rb_size': 24, 'crc_flag': 2}
+
+User 3: your key is 36
+Never gonnY?e \end{lstlisting}% }}}2
+    \end{indt} %}}}1
+
+    \begin{indt}{\section{Conclusion}}% {{{1
+        In this project, we implemented a program able to decode a simplified version of a 5G NR signal.
+        This hands-on project bridges theoretical concepts and practical implementation, enhancing our understanding of how modern cellular networks manage user-specific data and ensure reliable communication.
+    \end{indt}% }}}1
+    
+\end{document}
+%--------------------------------------------End
+
+% vim:foldmethod=marker:foldlevel=0

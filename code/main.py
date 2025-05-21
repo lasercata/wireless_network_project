@@ -54,12 +54,12 @@ def run_tests(matrix, display=True):
 def print_help(argv):
     '''Prints the help message for the parser and exits.'''
 
-    print(f'Usage: {argv[0]} matrix_filename [user_ident]')
-    print(f'Or, to run the tests: {argv[0]} -t')
+    print(f'Usage: {argv[0]} [-v] [-t] matrix_filename [user_ident]')
     print(f'\nExamples:')
-    print(f'    To decode for user 3:    {argv[0]} data/tfMatrix.csv 3')
-    print(f'    To decode for all users: {argv[0]} data/tfMatrix.csv')
-    print(f'    To run all tests:        {argv[0]} data/tfMatrix.csv -t')
+    print(f'    To decode for user 3:                  {argv[0]} data/tfMatrix.csv 3')
+    print(f'    To decode for user 3 and show more:    {argv[0]} data/tfMatrix.csv 3 -v')
+    print(f'    To decode for all users:               {argv[0]} data/tfMatrix.csv')
+    print(f'    To run all tests:                      {argv[0]} data/tfMatrix.csv -t')
     sysexit()
 
 def parser(argv):
@@ -73,6 +73,12 @@ def parser(argv):
         testing = True
 
         del argv[argv.index('-t')]
+
+    verbose = False
+    if '-v' in argv:
+        verbose = True
+
+        del argv[argv.index('-v')]
 
     if argv[1][0] == '-':
         print(f'Invalid argument "{argv[1]}"')
@@ -94,8 +100,16 @@ def parser(argv):
     else:
         user_ident = int(argv[2])
 
-        payload = DecodeMatrix(m).get_payload_user(user_ident)
-        print(payload_to_str(payload, user_ident))
+        d = DecodeMatrix(m)
+        payload = d.get_payload_user(user_ident)
+        res = payload_to_str(payload, user_ident)
+
+        if verbose:
+            print('PBCHU:', d.decode_PBCH_user(user_ident))
+            print('PDCCHU:', d.decode_PDCCHU_user(user_ident))
+            print()
+
+        print(res)
 
 ##-Run
 if __name__ == '__main__':

@@ -123,9 +123,9 @@ class DecodeMatrix:
 
         self.mat_idx = 0
 
-    def retreive_PBCH(self) -> list[np.complex128]:
+    def retrieve_PBCH(self) -> list[np.complex128]:
         '''
-        Retreives the PBCH (broadcast channel) from the matrix.
+        Retrieves the PBCH (broadcast channel) from the matrix.
         It also flattens the matrix.
 
         In fact, it only removes the synchronisation symbols.
@@ -134,7 +134,7 @@ class DecodeMatrix:
         The lenght depends on the number of users.
 
         Returns:
-            np.ndarray: the PBCH we retreived
+            np.ndarray: the PBCH we retrieved
         '''
 
         pbch_and_more = self.matrix[2:] # The PBCH starts from the third line.
@@ -156,7 +156,7 @@ class DecodeMatrix:
             tuple: (cell ident, number of users).
         '''
     
-        header = self.retreive_PBCH()[:48]
+        header = self.retrieve_PBCH()[:48]
 
         decoded_header = demod_decode_block(header, 0) # 0 for 2qam
 
@@ -168,9 +168,9 @@ class DecodeMatrix:
 
     def decode_PBCH(self) -> tuple[int, int, list[dict[str, int]]]:
         '''
-        Uses a method to retreive the PBCH from the matrix,
+        Uses a method to retrieve the PBCH from the matrix,
         then demods (2qam) it and decodes it (Hamming748).
-        Retreives the cell ident and the number of users.
+        Retrieves the cell ident and the number of users.
 
         Returns:
             tuple[int, int, list[dict]]: (cell_ident, user_nb, [{'user_ident': <user_ident>, 'mcs': <mcs>, 'symb_start': <symb_start>, 'rb_start': <rb_start>, 'harq': <harq>}, ...])
@@ -187,9 +187,9 @@ class DecodeMatrix:
 
     def decode_PBCH_user(self, user_ident: int) -> dict[str, int]:
         '''
-        Uses a method to retreive the PBCH from the matrix,
+        Uses a method to retrieve the PBCH from the matrix,
         then demods (2qam) it and decodes it (Hamming748).
-        Retreives the cell ident and the number of users.
+        Retrieves the cell ident and the number of users.
         Then it parses all the matrix to find the user `user_ident`.
 
         Args:
@@ -259,10 +259,10 @@ class DecodeMatrix:
 
     def decode_PDCCHU_user(self, user_ident: int) -> dict[str, int]:
         '''
-        Retreives the data from the PDCCHU concerning the user `user_ident` from the matrix using `self.decode_PBCH_user`.
+        Retrieves the data from the PDCCHU concerning the user `user_ident` from the matrix using `self.decode_PBCH_user`.
 
         Args:
-            :user_ident: the identifier of the user to retreive the data
+            :user_ident: the identifier of the user to retrieve the data
         
         Returns:
             dict[str, int]: {'user_ident': <user_ident>, 'mcs': <mcs>, 'symb_start': <symb_start>, 'rb_start': <rb_start>, 'crc_flag': <crc_flag>}
@@ -294,7 +294,7 @@ class DecodeMatrix:
 
     def get_payload_user(self, user_ident: int) -> list[int]:
         '''
-        Retreives the data corresponding to the user `user_ident`.
+        Retrieves the data corresponding to the user `user_ident`.
 
         Args:
             :user_ident: the identifier of the user.
