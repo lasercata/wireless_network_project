@@ -68,5 +68,6 @@ def test_crcDecode():
 
 
 
-test_crcGen()
-test_crcDecode()
+if __name__ == '__main__':
+    test_crcGen()
+    test_crcDecode()

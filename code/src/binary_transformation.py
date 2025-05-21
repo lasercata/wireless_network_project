@@ -6,9 +6,8 @@ import numpy as np
 import math
 
 ##-Functions
-""" Apply the Cesar transformation to the ASCII input to perform (trivial) decoding 
-""" 
 def cesarDecode(userIdent,messEnc): 
+    """Apply the Cesar transformation to the ASCII input to perform (trivial) decoding""" 
     cesarKey = getCesarKey(userIdent)
     mess = []
     for elem in messEnc:
@@ -17,9 +16,8 @@ def cesarDecode(userIdent,messEnc):
     return mess 
 
 
-""" Convert a binary array into a Byte arrays 
-"""
 def bitToByte(array):
+    """Convert a binary array into a Byte arrays"""
     mess = []
     nbWord = math.floor(len(array) / 8)
     for n in range(nbWord):
@@ -29,8 +27,8 @@ def bitToByte(array):
         mess.append(w)
     return mess 
 
-""" Convert a byte array into a comprehensive string """
 def toASCII(mess) -> str:
+    """Convert a byte array into a comprehensive string"""
     word = []
     for x in mess:
         word.append(chr(int(x)))
@@ -39,7 +37,7 @@ def toASCII(mess) -> str:
 
 def getCesarKey(userId):
     # We have hard coded an interleaver between 1 and 26 and then we modulo 
-	# Not using Cesar key system 
+    # Not using Cesar key system 
     cesarVect =   [5,
                    6,
                    10,
@@ -69,9 +67,9 @@ def getCesarKey(userId):
     return cesarVect[(userId-1)%26] 
 
 
-""" Unit testing for bit to byte transform 
-"""
 def test_bitToByte():
+    """Unit testing for bit to byte transform"""
+
     seq = np.array([ 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0])
     mess = bitToByte(seq)
     assert mess == [22,96,82,54]
@@ -80,4 +78,5 @@ def test_bitToByte():
     assert bitToByte(np.array([0,1,1,1,1,1,0,0,0,0,0,0,1,1,0,1,1,0,1,1,1,1,0,0,0,1,0,0,1,0,0,0])) == [62, 176, 61, 18]
     assert bitToByte(np.array([1,0,0,0,1,1,1,0,1,0,0,1,1,1,1,0,0,0,0,1,1,1,0,0,1,0,1,1,1,1,1,1,1,0,1,0,0,1,1,0,0,1,1,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,0,1,1,1])) == [113, 121, 56, 253, 101, 22, 18, 232]
 
-test_bitToByte()
+if __name__ == '__main__':
+    test_bitToByte()
