@@ -5,7 +5,7 @@
 
 ##-Imports
 from src.utils import *
-from src.decode import test_decode_all_PBCH, test_decode_all_PDCCHU
+from src.decode import test_decode_all_PBCH, test_decode_all_PDCCHU, test_decode_all_payloads
 from tests.tests_hamming import *
 from tests.tests_modulation import *
 
@@ -41,6 +41,11 @@ if __name__ == '__main__':
     print('-'*16)
     print('Testing decode:')
     m1 = get_matrix('data/tfMatrix.csv')
+    # m1 = get_matrix('data/tfMatrix_3.csv')
+    # power_distrib_graph(m1)
+
     test_decode_all_PBCH(m1)
     test_decode_all_PDCCHU(m1)
+
+    test_decode_all_payloads(m1)
 

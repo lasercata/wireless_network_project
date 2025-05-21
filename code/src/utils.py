@@ -17,9 +17,6 @@ import pytest
 # Convolutional decoder
 import sk_dsp_comm.fec_conv as fec
 
-##-Init
-#TODO: create a dictionnay with all the usefull information (cell size and number of users)
-
 ##-Functions
 def get_matrix(fn: str) -> list[list[np.complex128]]:
     '''
@@ -51,7 +48,7 @@ def get_matrix(fn: str) -> list[list[np.complex128]]:
     a = [
         [mat_complex[i][j] for j in range(1, bound_1 + 1)]
         + [mat_complex[i][j] for j in range(bound_2 + 1, N)]
-        for i in range(12)
+        for i in range(len(mat_complex))
     ]
 
     # tf_mat_short = np.array(a)

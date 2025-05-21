@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+##-Imports
+import numpy as np
+import math
+
+##-Functions
 """ Apply the Cesar transformation to the ASCII input to perform (trivial) decoding 
 """ 
 def cesarDecode(userIdent,messEnc): 
@@ -22,11 +30,11 @@ def bitToByte(array):
     return mess 
 
 """ Convert a byte array into a comprehensive string """
-def toASCII(mess):
+def toASCII(mess) -> str:
     word = []
     for x in mess:
         word.append(chr(int(x)))
-    return word 
+    return ''.join(word)
 
 
 def getCesarKey(userId):

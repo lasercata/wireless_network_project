@@ -3,7 +3,10 @@
 
 ##-Imports
 import numpy as np
+import sk_dsp_comm.fec_conv as fec
 
+from src.binary_transformation import bitToByte, cesarDecode, toASCII
+from src.crc import crc_decode, get_crc_poly
 from src.demod import bpsk_demod, qpsk_demod, qam16_demod
 from src.hamming748 import Hamming748
 from src.utils import bin2dec, flatten_index, get_matrix
@@ -22,6 +25,7 @@ def demod_decode_block(block: list[np.complex128], mcs: int = 0) -> list[int]:
                     3 : not implemented in this project
     '''
 
+    #---Demodulation
     if mcs == 0:
         demoded = bpsk_demod(block)
 
@@ -37,10 +41,70 @@ def demod_decode_block(block: list[np.complex128], mcs: int = 0) -> list[int]:
     else:
         raise ValueError(f'mcs should be in [0 ; 3], but {mcs} was found !')
 
+    #---Decoding
     h = Hamming748()
     decoded = h.decode(demoded)
 
     return decoded
+
+def demod_decode_PDSCH_block(block: list[np.complex128], mcs: int) -> list[int]:
+    '''
+    Demodulates and decodes a PDSCH block according to the `mcs`.
+
+    Args:
+        :block: the complex block to demod and decode
+        :mcs: an integer indicating which demodulation algorithm to use. Possible values:
+            mcs % 5:
+                0 for bpsk,
+                1 for qpsk,
+                2 for 16qam,
+                3 for 64qam (not implemented),
+                4 for 256qam (not implemented)
+            mcs // 5:
+                0 for 1/3,
+                1 for 1/2 (implemented),
+                3 for 2/3,
+                4 for 3/4,
+                5 for 1/3 Hamming124,
+                6 for 1/2 Hamming748 (implemented),
+                7 for 2/3 Hamming128,
+                8 for 3/4 Hamming2416
+    '''
+
+    #---Demodulation
+    if mcs % 5 == 0:
+        demoded = bpsk_demod(block)
+    elif mcs % 5 == 1:
+        demoded = qpsk_demod(block)
+    elif mcs % 5 == 2:
+        demoded = qam16_demod(block)
+    else:
+        raise NotImplementedError('Not implemented in this project')
+
+    #---Decoding
+    if mcs // 5 == 1:
+        cc1 = fec.FECConv(('1011011', '1111001'), 6) # Create a 1/2 convolutional code object (brave AI)
+        arr = np.array(demoded).astype(int)
+        decoded_ = cc1.viterbi_decoder(arr, 'hard')
+
+        decoded = [int(k) for k in decoded_]
+
+    elif mcs // 5 == 7:
+        h = Hamming748()
+        decoded = h.decode(demoded)
+
+    else:
+        raise NotImplementedError('Not implemented in this project')
+
+    return decoded
+
+def payload_to_str(payload: list[int], user_ident: int) -> str:
+    '''TODO: Docstring for payload_to_str.'''
+
+    msg = bitToByte(payload)
+    clear_msg = cesarDecode(user_ident, msg)
+
+    return toASCII(clear_msg)
 
 ##-DecodeMatrix
 class DecodeMatrix:
@@ -203,18 +267,14 @@ class DecodeMatrix:
             :user_ident: the identifier of the user to retreive the data
         
         Returns:
-            dict[str, int]: {'user_ident': <user_ident>, 'mcs': <mcs>, 'symb_start': <symb_start>, 'rb_start': <rb_start>, 'crc': <crc>}
+            dict[str, int]: {'user_ident': <user_ident>, 'mcs': <mcs>, 'symb_start': <symb_start>, 'rb_start': <rb_start>, 'crc_flag': <crc_flag>}
         '''
 
-        self.retreive_PBCH()
-    
         user_data = self.decode_PBCH_user(user_ident)
 
         beg_index = flatten_index(user_data['symb_start'] - 3, (user_data['rb_start'] - 1) * 12)
 
-        modulated_data = self.flattened_mat[
-            beg_index : beg_index + 3 * 12
-        ]
+        modulated_data = self.flattened_mat[beg_index : beg_index + 3 * 12]
 
         decoded = demod_decode_block(modulated_data, user_data['mcs']) # 36 complex numbers -> 72 bits (4qam) -> 36 bits (Hamming748)
 
@@ -224,9 +284,37 @@ class DecodeMatrix:
         ret['symb_start'] = bin2dec(decoded[14:18]) # 4 bits
         ret['rb_start'] = bin2dec(decoded[18:24]) # 6 bits
         ret['rb_size'] = bin2dec(decoded[24:34]) # 10 bits
-        ret['crc'] = bin2dec(decoded[34:36]) # 2 bits
+        ret['crc_flag'] = bin2dec(decoded[34:36]) # 2 bits
 
         return ret
+
+    def get_payload_user(self, user_ident: int) -> list[int]:
+        '''TODO: Docstring for get_payload_user.
+
+        - user_ident : TODO
+        '''
+    
+        #-Get the data
+        user_PDCCHU_data = self.decode_PDCCHU_user(user_ident)
+
+        beg_index = flatten_index(user_PDCCHU_data['symb_start'] - 3, (user_PDCCHU_data['rb_start'] - 1) * 12)
+        end_index = beg_index + 12 * user_PDCCHU_data['rb_size']
+
+        # if end_index >= len(self.flattened_mat):
+        #     return
+
+        modulated_data = self.flattened_mat[beg_index : end_index]
+
+        decoded = demod_decode_PDSCH_block(modulated_data, user_PDCCHU_data['mcs'])
+
+        #-Check the CRC
+        crc_size = 8 * (user_PDCCHU_data['crc_flag'] + 1)
+        poly = get_crc_poly(crc_size)
+
+        if crc_decode(decoded, poly) == 0:
+            raise ValueError('DecodeMatrix: get_payload_user: error with CRC decoding (incorrect)')
+
+        return decoded
 
 
 ##-Tests
@@ -261,4 +349,21 @@ def test_decode_all_PDCCHU(matrix):
     for user_ident in range(1, nb_users + 1):
         data = d.decode_PDCCHU_user(user_ident)
         print('    ' + str(data))
+
+def test_decode_all_payloads(matrix):
+    '''Tests the `DecodeMatrix.get_payload_user` method.'''
+
+    d = DecodeMatrix(matrix)
+    _, nb_users = d.decode_PBCH_header()
+
+    print('\npayload data :')
+
+    for user_ident in range(1, nb_users + 1):
+        try:
+            payload = d.get_payload_user(user_ident)
+            s_pay = ''.join(str(k) for k in payload)
+            print(f'    User #{user_ident}: {s_pay}')
+            print(payload_to_str(payload, user_ident))
+        except ValueError as err:
+            print(f'    User #{user_ident}: error: {err}')
 

@@ -1,32 +1,43 @@
-""" Check the CRC polynom. Returns 1 if the CRC is correct and 0 otherwise """
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+##-Imports
+import numpy as np
+
+##-Functions
 def crc_decode(data,poly):
+    """Check the CRC polynom. Returns 1 if the CRC is correct and 0 otherwise"""
+
     data2 = np.copy(data)       # Copy of working vector 
     lenR  = len(data);           # length of the received codeword
     lenGW = len(poly);          # length of the generator
     for i in range(lenR - lenGW + 1):
         if data2[i] == 1:
             data2[i:i+lenGW:1] = np.logical_xor(data2[i:i+lenGW:1],poly);
-	# syndrome is now equal to the remainder of xor division
+
+    # syndrome is now equal to the remainder of xor division
     syndrome = data2[ lenR - lenGW + 1: lenR : 1];
-    print(syndrome)
+    # print(syndrome)
     if all(syndrome == 0x00):
         err = 1
     else: 
         err = 0;
-    print(err)
+    # print(err)
     return err
 
 
-""" Create the CRC polynom of size crcSize, based on the positions of the 1 in the CRC polynoms """
 def create_g(crcSize,positions):
+    """Create the CRC polynom of size crcSize, based on the positions of the 1 in the CRC polynoms"""
+
     gx = np.zeros(1+crcSize)
     gx[0] = 1
     for k in positions:
         gx[k] = 1
     return gx 
 
-""" Returns the generated CRC polynoms for the given size """
 def get_crc_poly(crcSize):
+    """Returns the generated CRC polynoms for the given size"""
+
     if crcSize == 8:
         gx = create_g(crcSize,[1,2,8])
     elif crcSize == 16:

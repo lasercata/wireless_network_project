@@ -60,6 +60,9 @@ def qam16_demod(v: np.ndarray | list[np.complex128]) -> list[int]:
         list[int]: calculated demodulation.
     """
 
+    if type(v) == list:
+        v = np.array(v)
+
     # %FIXME Scaling vector 
     v = v * math.sqrt(2/3*(16-1))
     # Need to switch to vector 
