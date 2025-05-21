@@ -1,0 +1,140 @@
+\documentclass[a4paper, 12pt, twoside]{article}
+
+
+%------------------------------------------------------------------------
+%
+% Author                :   Lasercata
+% Last modification     :   2025.05.07
+%
+%------------------------------------------------------------------------
+
+%---------Init {{{1
+%------Lang
+\usepackage[french]{babel}
+%\usepackage[english]{babel}
+
+
+%See https://github.com/lasercata/LaTeX_Templates for the file latex_base.sty
+% \input{~/Templates/latex_base.sty}
+\input{latex_base.sty}
+
+
+%------Circuitikz
+%\usetikzlibrary{babel}             %Uncomment this to use circuitikz
+%\usetikzlibrary{shapes.geometric}  % To draw triangles in trees
+%\usepackage[european]{circuitikz}            %Electrical circuits drawing
+
+%------Sections
+%---To change section numbering :
+% \renewcommand\thesection{\Roman{section}}
+% \renewcommand\thesubsection{\arabic{subsection})}
+% \renewcommand\thesubsubsection{\textit \alph{subsubsection})}
+
+%---To start numbering sections from 0
+% \setcounter{section}{-1}
+
+%---To hide subsubsection from the table of contents (show with max depth of 2)
+% \setcounter{tocdepth}{2}
+
+
+%------Logo
+% \setlogo[pics/logo.png] %Comment to remove the logo
+\fancyfoot[LO, RE]{\includegraphics[scale=0.05]{pics/logo.png}}
+%}}}1
+
+%------Title (with default LaTeX style)
+\title{Projet JEE -- Rapport}
+\author{
+    Équipe Tonnerre de Zeus
+    \\ Laszlo \textsc{Abadie}
+    \\ Adem \textsc{Benkeddad}
+    \\ Samy \textsc{Chaabi}
+    \\ Sami \textsc{Taki}
+    \\ Louis \textsc{Thomas-Girardey}
+}
+\date{
+    \today
+    \\
+    $\phantom{a}$
+    \\
+    \includegraphics[width=.6\textwidth]{pics/logo.png}
+}
+
+%---------------------------------Begin Document
+\begin{document}
+    
+    % Title {{{1
+    % \thetitle{Projet d'algorithmique avancée}{Rapport}
+    \maketitle
+
+    \newpage
+    
+    \tableofcontents
+    \listoffigures
+    \listoftables
+    \listofalgorithms
+    \newpage
+    % }}}1
+
+    \begin{indt}{\section{Structure du projet}} %{{{1
+        \begin{indt}{\subsection{Arborescence}} %{{{2
+            \begin{figure}[H]
+                \centering
+            
+                \includegraphics[scale=.7]{pics/tree_0.png}
+            
+                \caption{Arborescence du projet (fichiers java)}
+            \end{figure}
+
+            Le projet est découpé en plusieurs packages java.
+        \end{indt} %}}}2
+
+        \begin{indt}{\subsection{API}} %{{{2
+            \begin{indt}{Nous avons choisi d'implémenter une API REST suivante, avec trois points d'entrée :}
+                $-$ \texttt{/api/attractions} ;
+
+                $-$ \texttt{/api/restaurants} ;
+
+                $-$ \texttt{/api/shows} ;
+            \end{indt}
+
+            Avec par exemple pour les attractions :
+
+            \begin{lstlisting}[xleftmargin=60pt]
+GET /api/attractions         - Retreives a list of all attractions
+GET /api/attractions/{id}    - Retreives data for the attraction of id `id`
+POST /api/attractions        - Creates a new attraction
+PUT /api/attractions/{id}    - Updates an existing attraction
+DELETE /api/attractions/{id} - Deletes an existing attraction \end{lstlisting}
+        \end{indt} %}}}2
+    \end{indt} %}}}1
+
+    \begin{indt}{\section{Choix d'implémentation}} %{{{1
+        Il y a trois classes principales : \texttt{Attraction}, \texttt{Restaurant} et \texttt{Show}.
+        Ces classes représentent respectivement les attractions, restaurants et les spectacles.
+
+        En plus de ces classes, on a pour chacune une classe DAOImpl, qui contient des méthodes permettant d'échanger avec la base de données.
+        Il y a également pour chaque classe une classe Controller qui permet de créer les endpoints.
+
+        Il y a une interface \texttt{GeneralDAO} qui est paramétrée par un type (qui sera une des classes), qui est implémentée par les DAOImpl.
+        Elle contient aussi des méthodes statiques.
+
+        \vspace{12pt}
+        
+        Nous avons choisi de d'implémenter la logique (\textit{i.e} les vérifications d'horaires, de chevauchement, etc.) dans des triggers sur la base de donnée.
+
+        \vspace{12pt}
+        
+        Pour le frontend, nous avons factorisé le code javascript de génération des pages HTML, comme elles sont très similaires.
+    \end{indt} %}}}1
+
+    \begin{indt}{\section{État du projet}} %{{{1
+        Nous avons un backend fonctionnel : exposition de l'API, communication entre le java et le SQL, les triggers.
+
+        Le frontend est partiellement fonctionnel, mais ne communique pas bien avec le backend.
+    \end{indt} %}}}1
+    
+\end{document}
+%--------------------------------------------End
+
+% vim:foldmethod=marker:foldlevel=0

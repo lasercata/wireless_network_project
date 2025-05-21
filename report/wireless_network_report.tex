@@ -1,0 +1,84 @@
+\documentclass[a4paper, 12pt, twoside]{article}
+
+
+%------------------------------------------------------------------------
+%
+% Author                :   Lasercata
+% Last modification     :   2025.05.07
+%
+%------------------------------------------------------------------------
+
+%---------Init {{{1
+%------Lang
+\usepackage[french]{babel}
+%\usepackage[english]{babel}
+
+
+%See https://github.com/lasercata/LaTeX_Templates for the file latex_base.sty
+% \input{~/Templates/latex_base.sty}
+\input{latex_base.sty}
+
+
+%------Circuitikz
+%\usetikzlibrary{babel}             %Uncomment this to use circuitikz
+%\usetikzlibrary{shapes.geometric}  % To draw triangles in trees
+%\usepackage[european]{circuitikz}            %Electrical circuits drawing
+
+%------Sections
+%---To change section numbering :
+% \renewcommand\thesection{\Roman{section}}
+% \renewcommand\thesubsection{\arabic{subsection})}
+% \renewcommand\thesubsubsection{\textit \alph{subsubsection})}
+
+%---To start numbering sections from 0
+% \setcounter{section}{-1}
+
+%---To hide subsubsection from the table of contents (show with max depth of 2)
+% \setcounter{tocdepth}{2}
+
+
+%------Logo
+% \setlogo[pics/logo.png] %Comment to remove the logo
+\fancyfoot[LO, RE]{\includegraphics[scale=0.05]{pics/logo.png}}
+%}}}1
+
+%------Title (with default LaTeX style)
+\title{Wireless Project -- Report}
+\author{
+    \\ Samy \textsc{Chaabi}
+    \\ Louis \textsc{Thomas-Girardey}
+}
+\date{
+    \today
+    \\
+    $\phantom{a}$
+}
+
+%---------------------------------Begin Document
+\begin{document}
+    
+    % Title {{{1
+    % \thetitle{Projet d'algorithmique avancée}{Rapport}
+    \maketitle
+
+    \newpage
+    
+    \tableofcontents
+    \listoffigures
+    \listoftables
+    \listofalgorithms
+    \newpage
+    % }}}1
+
+    \begin{indt}{\section{Project Context}} %{{{1
+        what's the goal of the project ?
+    \end{indt}
+
+    \begin{indt}{\section{Implementation choices}}
+        - we used the bpsk to modulate the pbbch because the information it contains is crucial to retreive the user data from the matrix. Indeed with only two possible values, we decrease the amount of information we can stock but this latter is way more protected and more reliable because much less noise sensitive. (insert an image of the different modulation that exist to illustrate statement)
+    \end[indt]
+    
+\end{document}
+%--------------------------------------------End
+
+% vim:foldmethod=marker:foldlevel=0
