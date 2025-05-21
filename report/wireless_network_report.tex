@@ -4,14 +4,16 @@
 %------------------------------------------------------------------------
 %
 % Author                :   Lasercata
-% Last modification     :   2025.05.07
+% Last modification     :   2025.05.21
 %
 %------------------------------------------------------------------------
 
 %---------Init {{{1
 %------Lang
-\usepackage[french]{babel}
+% \usepackage[french]{babel}
 %\usepackage[english]{babel}
+
+\input{data/data.sty}
 
 
 %See https://github.com/lasercata/LaTeX_Templates for the file latex_base.sty
@@ -39,59 +41,59 @@
 
 %------Logo
 % \setlogo[pics/logo.png] %Comment to remove the logo
-\fancyfoot[LO, RE]{\includegraphics[scale=0.05]{pics/logo.png}}
+% \fancyfoot[LO, RE]{\includegraphics[scale=0.05]{pics/logo.png}}
 %}}}1
 
 %------Title (with default LaTeX style)
 \title{Wireless Project -- Report}
 \author{
-    \\ Samy \textsc{Chaabi}
-    \\ Louis \textsc{Thomas-Girardey}
+    \\ \NameA
+    \\ \NameB
 }
 \date{
     \today
-    \\
-    $\phantom{a}$
 }
 
 %---------------------------------Begin Document
 \begin{document}
     
     % Title {{{1
-    % \thetitle{Projet d'algorithmique avancée}{Rapport}
+    % \thetitle{}{}
     \maketitle
 
-    \newpage
-    
     \tableofcontents
-    \listoffigures
-    \listoftables
-    \listofalgorithms
+    % \listoffigures
+    % \listoftables
+    % \listofalgorithms
     \newpage
     % }}}1
 
-    % TODO : develop the bullet points
+    %TODO : develop the bullet points
 
     \begin{indt}{\section{Project Context}} %{{{1
-        what's the goal of the project ?
+        What's the goal of the project ?
     \end{indt}
 
-    \begin{indt}{\section{Project architecture}}
-        here explain the project file tree and the use of each folder
-    \end{indt}
+    \begin{indt}{\section{Project architecture}}% {{{1
+        Here explain the project file tree and the use of each folder
+    \end{indt}% }}}1
 
-    \begin{indt}{\section{How does it work ?}}
-        % TODO : add subsection for each big part like PBCH, PDSCH, ...
-        - we retreive pbch from matrix
-        - we used the bpsk to modulate the pbch because the information it contains is crucial to retreive the user data from the matrix. Indeed with only two possible values, we decrease the amount of information we can stock but this latter is way more protected and more reliable because much less noise sensitive. (insert an image of the different modulation that exist to illustrate statement)
-        - we read the user & cell ident
-        - we want to retreive a particular user info : we read each pbch block until we find the one that we want, we take its starting block and then look up for it in the pdsch.
-        - we do the same thing for the pdsch that gives us the payload staring block that contains the user data
-    \end{indt}
+    \begin{indt}{\section{How does it work ?}}% {{{1
+        %TODO : add subsection for each big part like PBCH, PDSCH, ...
+        - We retreive pbch from matrix
 
-    \begin{indt}{\section{Conclusion}}
-        - here make a brief conclusion about the project (what worked, what we learned, ...)
-    \end{indt}
+        - We used the bpsk to modulate the pbch because the information it contains is crucial to retreive the user data from the matrix. Indeed with only two possible values, we decrease the amount of information we can stock but this latter is way more protected and more reliable because much less noise sensitive. (insert an image of the different modulation that exist to illustrate statement)
+
+        - We read the user \& cell ident
+
+        - We want to retreive a particular user info : we read each pbch block until we find the one that we want, we take its starting block and then look up for it in the pdsch.
+
+        - We do the same thing for the pdsch that gives us the payload staring block that contains the user data
+    \end{indt}% }}}1
+
+    \begin{indt}{\section{Conclusion}}% {{{1
+        - Here make a brief conclusion about the project (what worked, what we learned, ...)
+    \end{indt}% }}}1
     
 \end{document}
 %--------------------------------------------End
