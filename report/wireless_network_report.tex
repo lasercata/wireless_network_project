@@ -74,13 +74,21 @@
         what's the goal of the project ?
     \end{indt}
 
+    \begin{indt}{\section{Project architecture}}
+        here explain the project file tree and the use of each folder
+    \end{indt}
+
     \begin{indt}{\section{How does it work ?}}
         - we retreive pbch from matrix
         - we used the bpsk to modulate the pbch because the information it contains is crucial to retreive the user data from the matrix. Indeed with only two possible values, we decrease the amount of information we can stock but this latter is way more protected and more reliable because much less noise sensitive. (insert an image of the different modulation that exist to illustrate statement)
         - we read the user & cell ident
         - we want to retreive a particular user info : we read each pbch block until we find the one that we want, we take its starting block and then look up for it in the pdsch.
         - we do the same thing for the pdsch that gives us the payload staring block that contains the user data
-    \end[indt]
+    \end{indt}
+
+    \begin{indt}{\section{Conclusion}}
+        - here make a brief conclusion about the project (what worked, what we learned, ...)
+    \end{indt}
     
 \end{document}
 %--------------------------------------------End
